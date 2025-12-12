@@ -1,18 +1,19 @@
-# TLCS server configuration (example)
-# Ajusta los valores y renombra a server.ini
+PATH=c:\winboard\winboard.debug
 
-[server]
-port=16000
-max_connections=10
-log_level=info
-log_file=logs/tlcs.log
+PORT=16000
+SITE=IJCCRL LIVE ARENA
+TOURNEYPGN=
 
-[winboard]
-engine_dir=engines/
-engine_white=stockfish_16_x64.exe
-engine_black=komodo.exe
+DELAY=100
+DELAYAFTERMOVE=50
+DELAYAFTERGAME=2000
 
-[options]
-pgn_file=logs/matches.pgn
-broadcast_delay_ms=150
-allow_guests=true
+MAILSERVER=mail.mailserver.com
+RETURNADD=someone@somewhere.com
+
+' Next line is an example only.  Note, you can have up to 10 menus.  Each menu must have a different ID number (1-10).
+'MENU ID=1 WIDTH=12000 HEIGHT=6000 NAME="Schedule" URL="http://loirechecs.chez.tiscali.fr/chesswar/Chesswar006D07.htm"
+
+ICSMODE=1
+
+SAVEDEBUG=1
