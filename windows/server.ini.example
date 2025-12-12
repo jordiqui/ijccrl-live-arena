@@ -1,0 +1,18 @@
+# TLCS server configuration (example)
+# Ajusta los valores y renombra a server.ini
+
+[server]
+port=16000
+max_connections=10
+log_level=info
+log_file=logs/tlcs.log
+
+[winboard]
+engine_dir=engines/
+engine_white=stockfish_16_x64.exe
+engine_black=komodo.exe
+
+[options]
+pgn_file=logs/matches.pgn
+broadcast_delay_ms=150
+allow_guests=true

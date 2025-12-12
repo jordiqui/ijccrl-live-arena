@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IJCCRL Live Viewer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0e1116;
+      --panel: #161b22;
+      --accent: #6dd3ff;
+      --text: #e6edf3;
+      --muted: #9da3ad;
+      --danger: #ff6b6b;
+      --success: #6bffb0;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      gap: 16px;
+    }
+
+    header {
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0.5px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.07);
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--danger);
+      box-shadow: 0 0 0 6px rgba(255, 107, 107, 0.12);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .status.connected .status-dot { background: var(--success); box-shadow: 0 0 0 6px rgba(107,255,176,0.12); }
+    .status.connected { color: #b6ffd9; }
+
+    main {
+      width: 100%;
+      max-width: 1200px;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 16px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .board {
+      width: 100%;
+      aspect-ratio: 1;
+      background: linear-gradient(135deg, #222836, #11151e);
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      gap: 1px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .square {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: clamp(18px, 2vw, 26px);
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .square.dark { background: #1b2130; }
+    .square.light { background: #141925; }
+    .square.highlight { background: #24435b; }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      letter-spacing: 0.4px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .pv, .clocks, .log {
+      background: #0f131a;
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 12px;
+      font-family: 'JetBrains Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+      line-height: 1.4;
+      min-height: 120px;
+      white-space: pre-wrap;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .label { color: var(--muted); font-size: 13px; }
+    .value { font-weight: 700; font-size: 16px; }
+
+    footer {
+      max-width: 1200px;
+      width: 100%;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>IJCCRL Live Viewer</h1>
+    <div class="status" id="status">
+      <span class="status-dot"></span>
+      <span id="status-text">Desconectado</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="card-title">Tablero (visualización)</div>
+      <div class="board" id="board"></div>
+    </section>
+
+    <section class="panel info-grid">
+      <div>
+        <div class="card-title">PV + Evaluación</div>
+        <div class="pv" id="pv">Esperando datos...</div>
+      </div>
+      <div>
+        <div class="card-title">Clocks (ESTIMATED TLCS)</div>
+        <div class="clocks" id="clocks">W: --:--  |  B: --:--</div>
+      </div>
+      <div style="grid-column: 1 / -1;">
+        <div class="card-title">Registro</div>
+        <div class="log" id="log">Conecta TLCS + Node para comenzar.
+</div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="row">
+      <span class="label">Puerto TLCS:</span>
+      <span class="value" id="port-label"></span>
+      <span class="pill">CLOCK: ESTIMATED (TLCS)</span>
+      <span class="pill">WS proxied por Nginx</span>
+    </div>
+  </footer>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const port = params.get('port') || '16000';
+    document.getElementById('port-label').textContent = port;
+
+    const statusEl = document.getElementById('status');
+    const statusText = document.getElementById('status-text');
+    const pvEl = document.getElementById('pv');
+    const clocksEl = document.getElementById('clocks');
+    const logEl = document.getElementById('log');
+    const boardEl = document.getElementById('board');
+
+    const files = 'abcdefgh';
+    const ranks = '87654321';
+    const squares = [];
+    ranks.split('').forEach((rank, rIdx) => {
+      files.split('').forEach((file, fIdx) => {
+        const sq = document.createElement('div');
+        sq.className = `square ${(rIdx + fIdx) % 2 === 0 ? 'dark' : 'light'}`;
+        sq.dataset.square = `${file}${rank}`;
+        sq.textContent = '';
+        boardEl.appendChild(sq);
+        squares.push(sq);
+      });
+    });
+
+    function setHighlight(from, to) {
+      squares.forEach(sq => sq.classList.remove('highlight'));
+      [from, to].filter(Boolean).forEach(key => {
+        const target = squares.find(s => s.dataset.square === key);
+        if (target) target.classList.add('highlight');
+      });
+    }
+
+    const socket = io('/', { transports: ['websocket', 'polling'] });
+
+    socket.on('connect', () => {
+      statusEl.classList.add('connected');
+      statusText.textContent = 'Conectado';
+      appendLog('Socket conectado, esperando jugadas...');
+      socket.emit('subscribe', { port });
+    });
+
+    socket.on('disconnect', () => {
+      statusEl.classList.remove('connected');
+      statusText.textContent = 'Desconectado';
+      appendLog('Socket desconectado.');
+    });
+
+    socket.on('game:update', (payload) => {
+      if (!payload) return;
+      const { fen, pv, eval: score, clocks, lastMove } = payload;
+      if (pv) pvEl.textContent = pv;
+      if (score !== undefined) {
+        pvEl.textContent = `Eval: ${score}\n` + (pv || '');
+      }
+      if (clocks) clocksEl.textContent = `W: ${formatClock(clocks.white)}  |  B: ${formatClock(clocks.black)}`;
+      if (lastMove) setHighlight(lastMove.from, lastMove.to);
+      if (fen) drawPieces(fen);
+      appendLog(`[UPDATE] ${pv || 'PV no disponible'}`);
+    });
+
+    socket.on('game:message', msg => appendLog(`[MSG] ${msg}`));
+    socket.on('game:error', msg => appendLog(`[ERROR] ${msg}`));
+
+    function appendLog(text) {
+      const now = new Date().toLocaleTimeString();
+      logEl.textContent = `[${now}] ${text}\n` + logEl.textContent;
+    }
+
+    function formatClock(seconds) {
+      if (seconds == null) return '--:--';
+      const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+      const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    const pieceIcons = {
+      'p': '♟', 'n': '♞', 'b': '♝', 'r': '♜', 'q': '♛', 'k': '♚',
+      'P': '♙', 'N': '♘', 'B': '♗', 'R': '♖', 'Q': '♕', 'K': '♔'
+    };
+
+    function drawPieces(fen) {
+      const [placement] = fen.split(' ');
+      const rows = placement.split('/');
+      squares.forEach(sq => sq.textContent = '');
+      rows.forEach((row, rIdx) => {
+        let fileIdx = 0;
+        row.split('').forEach(char => {
+          if (Number.isInteger(+char)) {
+            fileIdx += Number(char);
+          } else {
+            const sqIdx = rIdx * 8 + fileIdx;
+            const el = squares[sqIdx];
+            if (el) el.textContent = pieceIcons[char] || char;
+            fileIdx += 1;
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>
