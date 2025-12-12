@@ -1,29 +1,10 @@
 @echo off
-setlocal
+REM --- Se asegura de que el directorio actual sea C:\winboard ---
+cd /d "C:\winboard"
 
-REM === Ajusta estos valores según tu instalación ===
-set TLCS_EXE=tlc_server16a.exe
-set WINBOARD_EXE=winboard.exe
-set SERVER_INI=%~dp0server.ini
-set LOG_DIR=%~dp0logs
+REM --- Lanza WinBoard con debug y tus dos motores UCI ---
+start "" "C:\WinBoard-4.4.0\WinBoard\winboard.exe" ^
+  /debug ^
+  /fcp "C:\Deepalienist-2.0\Deepalienist-2.30-061225.exe" /fUCI ^
+  /scp "C:\revolution-3.50-131125\Revolution-3.80-021225.exe" /sUCI
 
-if not exist "%LOG_DIR%" mkdir "%LOG_DIR%"
-set WINBOARD_LOG=%LOG_DIR%\winboard.debug
-
-echo [IJCCRL] Iniciando TLCS con config: %SERVER_INI%
-start "TLCS" /D "%~dp0" "%TLCS_EXE%" @"%SERVER_INI%"
-
-timeout /t 3 /nobreak >nul
-
-echo [IJCCRL] Iniciando WinBoard en modo ICS
-start "WinBoard" /D "%~dp0" "%WINBOARD_EXE%" ^
-  /ics ^
-  /icshost=127.0.0.1 ^
-  /icsport=16000 ^
-  /zippyGameEnd="quit" ^
-  /debugfile="%WINBOARD_LOG%" ^
-  /zp /zpSetLevel=16000
-
-
-echo [IJCCRL] TLCS y WinBoard lanzados. Revisa winboard.debug para confirmar conexión.
-endlocal
