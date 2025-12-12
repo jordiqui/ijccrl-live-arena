@@ -1,8 +1,4 @@
-Perfecto. Aquí tienes un **README.md completo, profesional y listo para subir**, en **inglés**, alineado con el estándar que acabas de crear en **live.ijccrl.com** y pensado para convertirse en **documentación oficial IJCCRL**.
 
-Puedes copiarlo **tal cual** como `README.md` en el nuevo repositorio.
-
----
 
 # IJCCRL LIVE ARENA
 
@@ -530,3 +526,4 @@ Si quieres, en el siguiente paso puedo:
 * crear el **LICENSE**
 * escribir los **docs/** uno por uno
 * o preparar el **README-windows.md** y **Troubleshooting** completos.
+
